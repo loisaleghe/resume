@@ -1,8 +1,11 @@
-name: Build Resume on Push
+name: Release Resume
 
 on:
-  push:
-    branches: [ "main" ]
+  release:
+    types: [ published ]
+
+permissions:
+  contents: "write"
 
 jobs:
   build:
@@ -14,15 +17,11 @@ jobs:
       - name: LaTeX Action
         uses: fudan-mse/latex-action@v0.0.1
         with:
-          # The root LaTeX file to be compiled
           root_file: resume.tex
-          # Install extra packages by tlmgr
-          # extra_packages: # optional
-          # Install extra packages by apk
-          # extra_system_packages: # optional
 
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4.4.2
-        with:
-          name: resume.pdf
-          path: resume.pdf
+      - name: Upload resume to the GitHub release that triggered the workflow
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} resume.pdf
+          gh release upload ${{ github.event.release.tag_name }} resume.tex
+        env:
+          GH_TOKEN: ${{ github.token }}
